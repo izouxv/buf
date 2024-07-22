@@ -19,6 +19,8 @@ type Writer interface {
 	WriteInt16(num uint16) error
 	WriteInt8(num uint8) error
 
+	WriteBool(b bool) error
+
 	CopyBytes(data io.Reader) error
 }
 type Reader interface {
@@ -33,6 +35,8 @@ type Reader interface {
 	ReadInt32() (uint32, error)
 	ReadInt16() (uint16, error)
 	ReadInt8() (uint8, error)
+
+	ReadBool() (bool, error)
 }
 type WR interface {
 	Writer
@@ -229,7 +233,10 @@ func (s *pbBuf) ReadInt8() (num uint8, err error) {
 	}
 	return uint8(s.data_9[0]), nil
 }
-
+func (s *pbBuf) ReadBool() (b bool, err error) {
+	num, err := s.ReadInt8()
+	return num == 1, err
+}
 func (s *pbBuf) WriteInt64(num uint64) error {
 	binary.BigEndian.PutUint64(s.data_9, num)
 	return writeBytes(s.out, s.data_9[:8])
@@ -244,6 +251,13 @@ func (s *pbBuf) WriteInt16(num uint16) error {
 }
 func (s *pbBuf) WriteInt8(num uint8) error {
 	return writeBytes(s.out, []byte{num})
+}
+func (s *pbBuf) WriteBool(B bool) error {
+	var num uint8 = 0
+	if B {
+		num = 1
+	}
+	return s.WriteInt8(num)
 }
 func copyContentBuffer(dst io.Writer, src io.Reader) (err error) {
 	r := NewReader(src)

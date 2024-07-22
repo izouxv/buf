@@ -13,6 +13,7 @@ func Test_Buf(t *testing.T) {
 		isVar  bool
 		str    string
 		bytes  []byte
+		b      bool
 		num8   int8
 		num16  int16
 		num32  int32
@@ -77,6 +78,7 @@ func Test_Buf(t *testing.T) {
 			{num64: 1, isVar: false, ret: []byte{0, 0x7f, 0x80, 0x01, 0x03, 'a', 'b', 'c', '1', '2', '3', 3, 1, 2, 3, 4, 5, 6, 0x00, 0x00, 0x00, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01}},
 			{num16: 1, isVar: false, ret: []byte{0, 0x7f, 0x80, 0x01, 0x03, 'a', 'b', 'c', '1', '2', '3', 3, 1, 2, 3, 4, 5, 6, 0x00, 0x00, 0x00, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01, 0x00, 0x01}},
 			{num8: 1, isVar: false, ret: []byte{0, 0x7f, 0x80, 0x01, 0x03, 'a', 'b', 'c', '1', '2', '3', 3, 1, 2, 3, 4, 5, 6, 0x00, 0x00, 0x00, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01, 0x00, 0x01, 0x01}},
+			{b: true, isVar: false, ret: []byte{0, 0x7f, 0x80, 0x01, 0x03, 'a', 'b', 'c', '1', '2', '3', 3, 1, 2, 3, 4, 5, 6, 0x00, 0x00, 0x00, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01, 0x00, 0x01, 0x01, 0x01}},
 		},
 	}
 
@@ -97,6 +99,8 @@ func Test_Buf(t *testing.T) {
 					pbW.WriteBytes(item.bytes)
 				} else if len(item.str) > 0 {
 					pbW.WriteString(item.str)
+				} else if item.b {
+					pbW.WriteBool(item.b)
 				} else if item.num8 > 0 {
 					pbW.WriteInt8(uint8(item.num8))
 				} else if item.num16 > 0 {
@@ -135,6 +139,10 @@ func Test_Buf(t *testing.T) {
 					data, err := pbR.ReadString(uint64(len(item.str)))
 					assert.Nil(t, err)
 					assert.Equal(t, item.str, data)
+				} else if item.b {
+					data, err := pbR.ReadBool()
+					assert.Nil(t, err)
+					assert.Equal(t, item.b, data)
 				} else if item.num8 > 0 {
 					data, err := pbR.ReadInt8()
 					assert.Nil(t, err)
